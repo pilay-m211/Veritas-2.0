@@ -1,22 +1,32 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Veritas grading platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: students
+    description: Student management
+  - name: classes
+    description: Class management
+  - name: exams
+    description: Exam management
+  - name: grades
+    description: Grade management
+  - name: drafts
+    description: Draft scan management
+  - name: stats
+    description: Dashboard statistics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +34,656 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List all students
+      parameters:
+        - name: classId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: search
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Create a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentInput"
+      responses:
+        "201":
+          description: Created student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get student by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    patch:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentUpdate"
+      responses:
+        "200":
+          description: Updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    delete:
+      operationId: deleteStudent
+      tags: [students]
+      summary: Delete a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /classes:
+    get:
+      operationId: listClasses
+      tags: [classes]
+      summary: List all classes
+      responses:
+        "200":
+          description: List of classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Class"
+    post:
+      operationId: createClass
+      tags: [classes]
+      summary: Create a class
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassInput"
+      responses:
+        "201":
+          description: Created class
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+
+  /classes/{id}:
+    patch:
+      operationId: updateClass
+      tags: [classes]
+      summary: Update a class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassUpdate"
+      responses:
+        "200":
+          description: Updated class
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+    delete:
+      operationId: deleteClass
+      tags: [classes]
+      summary: Delete a class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /exams:
+    get:
+      operationId: listExams
+      tags: [exams]
+      summary: List all exams
+      parameters:
+        - name: classId
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of exams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Exam"
+    post:
+      operationId: createExam
+      tags: [exams]
+      summary: Create an exam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExamInput"
+      responses:
+        "201":
+          description: Created exam
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exam"
+
+  /exams/{id}:
+    get:
+      operationId: getExam
+      tags: [exams]
+      summary: Get exam by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Exam
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exam"
+    patch:
+      operationId: updateExam
+      tags: [exams]
+      summary: Update an exam
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExamUpdate"
+      responses:
+        "200":
+          description: Updated exam
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exam"
+    delete:
+      operationId: deleteExam
+      tags: [exams]
+      summary: Delete an exam
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /grades:
+    get:
+      operationId: listGrades
+      tags: [grades]
+      summary: List grades
+      parameters:
+        - name: examId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: studentId
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of grades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grade"
+    post:
+      operationId: upsertGrade
+      tags: [grades]
+      summary: Create or update a grade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GradeInput"
+      responses:
+        "200":
+          description: Upserted grade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grade"
+
+  /grades/bulk:
+    post:
+      operationId: bulkUpsertGrades
+      tags: [grades]
+      summary: Bulk upsert grades from scanner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkGradeInput"
+      responses:
+        "200":
+          description: Bulk upsert result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkGradeResult"
+
+  /drafts:
+    get:
+      operationId: listDrafts
+      tags: [drafts]
+      summary: List saved drafts
+      responses:
+        "200":
+          description: List of drafts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Draft"
+    post:
+      operationId: createDraft
+      tags: [drafts]
+      summary: Save a scan draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DraftInput"
+      responses:
+        "201":
+          description: Created draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Draft"
+
+  /drafts/{id}:
+    delete:
+      operationId: deleteDraft
+      tags: [drafts]
+      summary: Delete a draft
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /stats/dashboard:
+    get:
+      operationId: getDashboardStats
+      tags: [stats]
+      summary: Get dashboard summary statistics
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    DeleteResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+
+    Student:
+      type: object
+      required: [id, studentId, firstName, lastName, createdAt]
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: string
+          description: "School ID e.g. 2024-00001"
+        firstName:
+          type: string
+        lastName:
+          type: string
+        classId:
+          type: ["integer", "null"]
+        className:
+          type: ["string", "null"]
+        latestScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+
+    StudentInput:
+      type: object
+      required: [studentId, firstName, lastName]
+      properties:
+        studentId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        classId:
+          type: ["integer", "null"]
+
+    StudentUpdate:
+      type: object
+      properties:
+        studentId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        classId:
+          type: ["integer", "null"]
+
+    Class:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        section:
+          type: ["string", "null"]
+        subject:
+          type: ["string", "null"]
+        studentCount:
+          type: integer
+        createdAt:
+          type: string
+
+    ClassInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        section:
+          type: ["string", "null"]
+        subject:
+          type: ["string", "null"]
+
+    ClassUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        section:
+          type: ["string", "null"]
+        subject:
+          type: ["string", "null"]
+
+    Exam:
+      type: object
+      required: [id, title, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        classId:
+          type: ["integer", "null"]
+        className:
+          type: ["string", "null"]
+        totalItems:
+          type: ["integer", "null"]
+        gradedCount:
+          type: integer
+        averageScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+
+    ExamInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        classId:
+          type: ["integer", "null"]
+        totalItems:
+          type: ["integer", "null"]
+
+    ExamUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        classId:
+          type: ["integer", "null"]
+        totalItems:
+          type: ["integer", "null"]
+
+    Grade:
+      type: object
+      required: [id, studentId, examId, score, createdAt]
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        examId:
+          type: integer
+        studentSchoolId:
+          type: string
+        studentName:
+          type: string
+        examTitle:
+          type: string
+        score:
+          type: number
+        createdAt:
+          type: string
+
+    GradeInput:
+      type: object
+      required: [studentId, examId, score]
+      properties:
+        studentId:
+          type: integer
+        examId:
+          type: integer
+        score:
+          type: number
+
+    BulkGradeInput:
+      type: object
+      required: [examId, records]
+      properties:
+        examId:
+          type: integer
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScanRecord"
+
+    ScanRecord:
+      type: object
+      required: [studentSchoolId, score]
+      properties:
+        studentSchoolId:
+          type: string
+        score:
+          type: number
+
+    BulkGradeResult:
+      type: object
+      required: [updated, notFound, total]
+      properties:
+        updated:
+          type: integer
+        notFound:
+          type: integer
+        total:
+          type: integer
+        notFoundIds:
+          type: array
+          items:
+            type: string
+
+    Draft:
+      type: object
+      required: [id, name, rawText, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        rawText:
+          type: string
+        recordCount:
+          type: integer
+        createdAt:
+          type: string
+
+    DraftInput:
+      type: object
+      required: [name, rawText]
+      properties:
+        name:
+          type: string
+        rawText:
+          type: string
+        recordCount:
+          type: ["integer", "null"]
+
+    DashboardStats:
+      type: object
+      required: [totalStudents, totalExams, totalClasses, totalGrades, recentGrades, recentExams]
+      properties:
+        totalStudents:
+          type: integer
+        totalExams:
+          type: integer
+        totalClasses:
+          type: integer
+        totalGrades:
+          type: integer
+        averageScore:
+          type: ["number", "null"]
+        recentGrades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Grade"
+        recentExams:
+          type: array
+          items:
+            $ref: "#/components/schemas/Exam"

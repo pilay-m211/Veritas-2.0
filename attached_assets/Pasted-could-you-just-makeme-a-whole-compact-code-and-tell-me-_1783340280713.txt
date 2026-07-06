@@ -1,0 +1,607 @@
+could you just makeme a whole compact code and tell me how do i fix my code for it to acquire excel so this is the part where i need excel to be opened and i want the scanner to have an option whether to upload it to excel and later upgrade the files within it , create another excel file or put it in the draft . so now i need you to act as a software engineer with high background in python , html , and other languages. i need you to make me a compact codes . i dont care how many files you provide me, but i dont want you to give it to me piece by piece or either even tell me the step by step process. i need a ready to copy and paste code that is completely functional. . make sure that the scanner also acquires the features an ocr has . strictly follow this criteria <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Answer Scanner — Veritas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <script src="veritas-db.js"></script>
+    <script src="ocr-utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.1/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root{--bg-base:#060914;--bg-elevated:#0c1224;--bg-glass:rgba(16,23,44,.55);--bg-glass-strong:rgba(20,30,60,.75);--bg-sidebar:rgba(10,16,32,.92);--border-glass:rgba(255,255,255,.08);--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--accent:#2dd4bf;--accent-2:#22d3ee;--accent-3:#818cf8;--danger:#f87171;--success:#34d399;--grad-hero:linear-gradient(135deg,#2dd4bf 0%,#22d3ee 45%,#818cf8 100%);--grad-cta:linear-gradient(135deg,#2dd4bf 0%,#22d3ee 100%);--shadow-card:0 20px 60px rgba(0,0,0,.45);--radius-sm:10px;--radius-md:16px;--transition:.4s cubic-bezier(.22,1,.36,1);--transition-fast:.25s cubic-bezier(.22,1,.36,1);--sidebar-width:260px;--sidebar-collapsed:72px;--header-height:68px}
+        *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-base);color:var(--text-primary);line-height:1.6;overflow-x:hidden;min-height:100vh;-webkit-font-smoothing:antialiased}a{text-decoration:none;color:inherit}button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:10px}
+
+        .bg-ambient{position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 10% 15%,rgba(45,212,191,.07),transparent 40%),radial-gradient(circle at 90% 20%,rgba(129,140,248,.07),transparent 40%),radial-gradient(circle at 40% 85%,rgba(34,211,238,.05),transparent 45%),var(--bg-base)}
+        .bg-grid{position:fixed;inset:0;z-index:-2;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 25%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse at center,black 25%,transparent 75%)}
+        .dashboard-shell{display:flex;min-height:100vh}
+
+        /* SIDEBAR (shared shell, same as students.html) */
+        .sidebar{width:var(--sidebar-width);min-height:100vh;background:var(--bg-sidebar);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);border-right:1px solid var(--border-glass);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:width var(--transition),transform var(--transition);overflow:hidden}
+        .sidebar.collapsed{width:var(--sidebar-collapsed)}.sidebar.collapsed .sidebar-label,.sidebar.collapsed .sidebar-section-title,.sidebar.collapsed .sidebar-user-info,.sidebar.collapsed .sidebar-logo-text{display:none}.sidebar.collapsed .sidebar-logo{justify-content:center;padding:20px 0}.sidebar.collapsed .nav-item{justify-content:center;padding:12px 0}.sidebar.collapsed .nav-item i{margin-right:0}.sidebar.collapsed .sidebar-user{justify-content:center;padding:16px 0}.sidebar.collapsed .sidebar-user-avatar{margin-right:0}
+        .sidebar-logo{display:flex;align-items:center;gap:12px;padding:22px 22px 18px;border-bottom:1px solid var(--border-glass);flex-shrink:0}
+        .logo-mark{width:36px;height:36px;border-radius:10px;background:var(--grad-hero);display:grid;place-items:center;color:#06121a;font-weight:900;font-size:1rem;box-shadow:0 4px 16px rgba(45,212,191,.35);flex-shrink:0}
+        .sidebar-logo-text{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;white-space:nowrap}
+        .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto;overflow-x:hidden}
+        .sidebar-section-title{font-size:.68rem;font-weight:600;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;padding:16px 12px 8px;white-space:nowrap}
+        .nav-item{display:flex;align-items:center;padding:11px 14px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:.88rem;font-weight:500;transition:all var(--transition-fast);margin-bottom:2px;cursor:pointer;white-space:nowrap;position:relative}
+        .nav-item i{width:20px;text-align:center;margin-right:12px;font-size:.95rem;flex-shrink:0}
+        .nav-item:hover{background:rgba(255,255,255,.04);color:var(--text-primary)}
+        .nav-item.active{background:rgba(45,212,191,.1);color:var(--accent)}
+        .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 4px 4px 0;background:var(--grad-cta)}
+        .nav-item .badge{margin-left:auto;background:rgba(248,113,113,.15);color:var(--danger);font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:20px}.sidebar.collapsed .nav-item .badge{display:none}
+        .sidebar-user{display:flex;align-items:center;gap:10px;padding:16px 18px;border-top:1px solid var(--border-glass);flex-shrink:0;cursor:pointer;transition:background var(--transition-fast)}.sidebar-user:hover{background:rgba(255,255,255,.03)}
+        .sidebar-user-avatar{width:34px;height:34px;border-radius:10px;background:var(--grad-hero);display:grid;place-items:center;color:#06121a;font-weight:700;font-size:.8rem;flex-shrink:0}
+        .sidebar-user-info{white-space:nowrap;overflow:hidden}.sidebar-user-name{font-size:.85rem;font-weight:600}.sidebar-user-role{font-size:.72rem;color:var(--text-muted)}
+
+        /* MAIN AREA */
+        .main-area{flex:1;margin-left:var(--sidebar-width);transition:margin-left var(--transition);display:flex;flex-direction:column;min-height:100vh}
+        .sidebar.collapsed~.main-area{margin-left:var(--sidebar-collapsed)}
+        .top-bar{height:var(--header-height);padding:0 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-glass);background:rgba(6,9,20,.6);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;flex-shrink:0}
+        .top-bar-left{display:flex;align-items:center;gap:16px}.top-bar-right{display:flex;align-items:center;gap:12px}
+        .btn-toggle-sidebar{width:38px;height:38px;display:grid;place-items:center;border-radius:10px;color:var(--text-secondary);font-size:1.05rem;transition:all var(--transition-fast);border:1px solid var(--border-glass);background:rgba(255,255,255,.02)}.btn-toggle-sidebar:hover{color:var(--text-primary);border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.05)}
+        .page-title-bar h1{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}.page-title-bar p{font-size:.78rem;color:var(--text-muted);margin-top:1px}
+        .dashboard-content{flex:1;padding:28px 32px 40px;overflow-y:auto}
+
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:10px;font-weight:600;font-size:.88rem;cursor:pointer;border:none;transition:all var(--transition-fast);white-space:nowrap}
+        .btn-small{padding:6px 12px;font-size:.8rem}
+        .btn-primary{background:var(--grad-cta);color:#06121a;box-shadow:0 6px 20px rgba(45,212,191,.2)}.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(45,212,191,.35)}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+        .btn-ghost{background:rgba(255,255,255,.03);color:var(--text-secondary);border:1px solid var(--border-glass)}.btn-ghost:hover{color:var(--text-primary);border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.05)}
+
+        .ocr-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+        .glass-panel{background:var(--bg-glass-strong);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);border:1px solid var(--border-glass);border-radius:var(--radius-md);overflow:hidden;position:relative;display:flex;flex-direction:column}
+        .panel-header{padding:18px 24px;border-bottom:1px solid var(--border-glass);display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .panel-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px}.panel-title i{color:var(--accent)}
+        .panel-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+        .dropzone-wrap{flex:1;padding:24px;display:flex;flex-direction:column}
+        .dropzone{flex:1;border:2px dashed var(--border-glass);border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition-fast);position:relative;overflow:hidden;min-height:400px}
+        .dropzone:hover,.dropzone.dragover{border-color:var(--accent);background:rgba(45,212,191,.04)}
+        .dropzone-content{text-align:center;color:var(--text-muted);z-index:1;pointer-events:none}
+        .dropzone-content i{font-size:3rem;margin-bottom:16px;color:var(--accent);opacity:.8}
+        .dropzone-content h3{color:var(--text-primary);font-size:1.1rem;margin-bottom:4px}.dropzone-content p{font-size:.85rem}
+        .image-preview{position:absolute;inset:0;object-fit:contain;width:100%;height:100%;background:#000;z-index:0}
+
+        .output-wrap{flex:1;padding:24px;display:flex;flex-direction:column}
+        .text-output{flex:1;width:100%;background:rgba(0,0,0,.2);border:1px solid var(--border-glass);border-radius:var(--radius-sm);padding:16px;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.6;resize:none;outline:none;transition:border-color var(--transition-fast);min-height:400px}
+        .text-output:focus{border-color:var(--accent)}.text-output::placeholder{color:var(--text-muted)}
+
+        .progress-container{padding:16px 24px;border-top:1px solid var(--border-glass);display:none}.progress-container.active{display:block}
+        .progress-info{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.8rem;color:var(--text-secondary)}
+        .progress-bar{height:6px;background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden}
+        .progress-fill{height:100%;width:0%;background:var(--grad-cta);transition:width .3s ease;box-shadow:0 0 10px rgba(45,212,191,.5)}
+
+        .help-note{margin-top:16px;padding:12px 16px;border-radius:10px;background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.18);font-size:.8rem;color:var(--text-secondary);display:flex;gap:10px;align-items:flex-start}
+        .help-note i{color:var(--accent-3);margin-top:2px}
+        .export-hint{margin-top:12px;font-size:.78rem;color:var(--text-muted)}
+
+        .toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:10px}
+        .toast{background:var(--bg-elevated);border:1px solid var(--border-glass);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:12px;font-size:.87rem;box-shadow:var(--shadow-card);animation:toastIn .5s cubic-bezier(.22,1,.36,1) forwards;min-width:260px}
+        .toast.removing{animation:toastOut .4s cubic-bezier(.22,1,.36,1) forwards}
+        .toast i{font-size:1.1rem}.toast.success i{color:var(--success)}.toast.error i{color:var(--danger)}.toast.info i{color:var(--accent-2)}
+        @keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
+
+        .sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;opacity:0;pointer-events:none;transition:opacity var(--transition)}.sidebar-backdrop.open{opacity:1;pointer-events:all}
+
+        @media(max-width:980px){.ocr-grid{grid-template-columns:1fr}}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%);width:var(--sidebar-width)!important}.sidebar.mobile-open{transform:translateX(0)}.main-area{margin-left:0!important}.top-bar{padding:0 18px}.dashboard-content{padding:20px 18px 40px}}
+    </style>
+</head>
+<body>
+    <div class="bg-ambient" aria-hidden="true"></div>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <div class="dashboard-shell">
+        <aside class="sidebar" id="sidebar">
+            <a href="../front-panel/dashboard.html" class="sidebar-logo"><div class="logo-mark">V</div><span class="sidebar-logo-text">Veritas</span></a>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-title">Main</div>
+                <a href="../front-panel/dashboard.html" class="nav-item"><i class="fa-solid fa-grid-2"></i><span class="sidebar-label">Dashboard</span></a>
+                <a href="classes.html" class="nav-item"><i class="fa-solid fa-chalkboard-user"></i><span class="sidebar-label">My Classes</span></a>
+                <a href="exams.html" class="nav-item"><i class="fa-solid fa-file-lines"></i><span class="sidebar-label">Exams</span></a>
+                <a href="students.html" class="nav-item"><i class="fa-solid fa-users"></i><span class="sidebar-label">Students</span></a>
+                <div class="sidebar-section-title">Tools</div>
+                <a href="scanner.html" class="nav-item active"><i class="fa-solid fa-camera"></i><span class="sidebar-label">Answer Scanner</span></a>
+                <a href="reports.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-label">Reports</span></a>
+                <div class="sidebar-section-title">Account</div>
+                <a href="settings.html" class="nav-item"><i class="fa-solid fa-gear"></i><span class="sidebar-label">Settings</span></a>
+                <a href="../front-panel/helpcenter.html" class="nav-item"><i class="fa-solid fa-circle-question"></i><span class="sidebar-label">Help Center</span></a>
+            </nav>
+            <a href="settings.html" class="sidebar-user"><div class="sidebar-user-avatar">JD</div><div class="sidebar-user-info"><div class="sidebar-user-name">Juan Dela Cruz</div><div class="sidebar-user-role">Teacher</div></div></a>
+        </aside>
+
+        <div class="main-area">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="btn-toggle-sidebar" id="toggle-sidebar-btn"><i class="fa-solid fa-bars"></i></button>
+                    <div class="page-title-bar"><h1>Answer Scanner</h1><p>Scan graded papers and sync scores straight to the roster</p></div>
+                </div>
+                <div class="top-bar-right">
+                    <button class="btn btn-ghost" id="clear-btn"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                    <button class="btn btn-primary" id="extract-btn" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Extract Text</button>
+                </div>
+            </header>
+
+            <main class="dashboard-content">
+                <div class="ocr-grid">
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <div class="panel-title"><i class="fa-solid fa-image"></i> Source Document</div>
+                            <span style="font-size:.75rem;color:var(--text-muted);">PNG, JPG, WEBP</span>
+                        </div>
+                        <div class="dropzone-wrap">
+                            <div class="dropzone" id="dropzone">
+                                <input type="file" id="file-input" accept="image/*" style="display:none;" />
+                                <img id="image-preview" class="image-preview" src="" alt="Preview" style="display:none;" />
+                                <div class="dropzone-content" id="dropzone-content">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <h3>Drop Image Here</h3>
+                                    <p>or click to browse files</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <div class="panel-title"><i class="fa-solid fa-file-lines"></i> Extracted Text</div>
+                            <div class="panel-actions">
+                                <button class="btn btn-primary btn-small" id="sync-db-btn"><i class="fa-solid fa-database"></i> Sync to DB</button>
+                                <button class="btn btn-ghost btn-small" id="export-btn"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                                <button class="btn btn-ghost btn-small" id="copy-btn"><i class="fa-solid fa-copy"></i> Copy</button>
+                            </div>
+                        </div>
+                        <div class="output-wrap">
+                            <textarea class="text-output" id="text-output" placeholder="Your extracted text will appear here. You can edit it directly before syncing..."></textarea>
+                            <div class="help-note">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>Each line should contain a Student ID and score, e.g. <strong>2024-00001 95</strong> or <strong>2024-00001 48/50</strong>. The Student ID must already exist in <a href="students.html" style="color:var(--accent-2);">Students</a> before it can be synced.</span>
+                            </div>
+                            <div class="export-hint">Export creates an Excel workbook when available, and falls back to CSV for broad compatibility.</div>
+                        </div>
+                        <div class="progress-container" id="progress-container">
+                            <div class="progress-info">
+                                <span id="progress-status">Initializing engine...</span>
+                                <span id="progress-percent">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        /* === SHARED SIDEBAR BEHAVIOR (matches students.html) === */
+        function initSidebar(){const s=document.getElementById('sidebar'),b=document.getElementById('sidebar-backdrop'),t=document.getElementById('toggle-sidebar-btn'),m=()=>window.innerWidth<=768;t?.addEventListener('click',()=>{if(m()){s.classList.toggle('mobile-open');b.classList.toggle('open')}else{s.classList.toggle('collapsed')}});b?.addEventListener('click',()=>{s.classList.remove('mobile-open');b.classList.remove('open')})}
+        initSidebar();
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const imagePreview = document.getElementById('image-preview');
+        const dropzoneContent = document.getElementById('dropzone-content');
+        const extractBtn = document.getElementById('extract-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const syncDbBtn = document.getElementById('sync-db-btn');
+        const textOutput = document.getElementById('text-output');
+        const progressContainer = document.getElementById('progress-container');
+        const progressFill = document.getElementById('progress-fill');
+        const progressStatus = document.getElementById('progress-status');
+        const progressPercent = document.getElementById('progress-percent');
+
+        let currentImageUrl = null;
+
+        function preprocessImageToDataUrl(imageUrl) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const scale = Math.min(2, 1800 / Math.max(img.width, img.height));
+                    canvas.width = Math.max(1, Math.round(img.width * scale));
+                    canvas.height = Math.max(1, Math.round(img.height * scale));
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const gray = (data[i] * 0.299) + (data[i + 1] * 0.587) + (data[i + 2] * 0.114);
+                        const adjusted = Math.max(0, Math.min(255, (gray - 128) * 1.25 + 128));
+                        data[i] = adjusted;
+                        data[i + 1] = adjusted;
+                        data[i + 2] = adjusted;
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = reject;
+                img.src = imageUrl;
+            });
+        }
+
+        function showToast(type, message) {
+            const container = document.getElementById('toast-container');
+            const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('removing');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 3500);
+        }
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showToast('error', 'Please upload a valid image file.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentImageUrl = event.target.result;
+                imagePreview.src = currentImageUrl;
+                imagePreview.style.display = 'block';
+                dropzoneContent.style.display = 'none';
+                extractBtn.disabled = false;
+                showToast('info', 'Image loaded successfully.');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* Accepts any YYYY-##### Student ID, not just 2024, so the
+           scanner keeps working once a new school year is added. */
+        function downloadCsv(rows) {
+            const csvContent = VeritasOCRUtils.buildCsvContent(rows);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'veritas-ocr-export.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadExcel(rows) {
+            if (typeof XLSX === 'undefined') {
+                downloadCsv(rows);
+                return;
+            }
+
+            const worksheetRows = VeritasOCRUtils.toWorksheetRows(rows);
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Veritas OCR');
+            XLSX.writeFile(workbook, 'veritas-ocr-export.xlsx');
+        }
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (event) => {
+            if (event.target.files.length > 0) handleFile(event.target.files[0]);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (event) => {
+                event.preventDefault(); event.stopPropagation();
+                dropzone.classList.add('dragover');
+            });
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (event) => {
+                event.preventDefault(); event.stopPropagation();
+                dropzone.classList.remove('dragover');
+            });
+        });
+        dropzone.addEventListener('drop', (event) => {
+            if (event.dataTransfer.files.length > 0) handleFile(event.dataTransfer.files[0]);
+        });
+
+        window.addEventListener('paste', (event) => {
+            const items = (event.clipboardData || window.clipboardData).items;
+            for (const item of items) {
+                if (item.type.includes('image')) {
+                    handleFile(item.getAsFile());
+                    break;
+                }
+            }
+        });
+
+        extractBtn.addEventListener('click', async () => {
+            if (!currentImageUrl) return;
+
+            extractBtn.disabled = true;
+            extractBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Extracting...';
+            progressContainer.classList.add('active');
+            textOutput.value = '';
+            progressStatus.innerText = 'Starting OCR engine...';
+            progressFill.style.width = '0%';
+            progressPercent.innerText = '0%';
+
+            try {
+                const processedImageUrl = await preprocessImageToDataUrl(currentImageUrl);
+                const result = await Tesseract.recognize(processedImageUrl, 'eng', {
+                    logger: (message) => {
+                        if (message.status === 'recognizing text') {
+                            const percent = Math.round(message.progress * 100);
+                            progressFill.style.width = `${percent}%`;
+                            progressPercent.innerText = `${percent}%`;
+                            progressStatus.innerText = 'Recognizing text...';
+                        } else {
+                            progressStatus.innerText = `${message.status.charAt(0).toUpperCase()}${message.status.slice(1)}...`;
+                        }
+                    }
+                });
+
+                textOutput.value = result.data.text.trim();
+                showToast('success', 'Text extraction complete!');
+                progressStatus.innerText = 'Completed successfully.';
+            } catch (error) {
+                console.error(error);
+                showToast('error', 'OCR failed. Please try another image.');
+                progressStatus.innerText = 'Extraction failed.';
+            } finally {
+                extractBtn.disabled = false;
+                extractBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Extract Text';
+            }
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            const text = textOutput.value.trim();
+            if (!text) { showToast('error', 'No text to copy.'); return; }
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('success', 'Extracted text copied.');
+            } catch (error) {
+                textOutput.select();
+                document.execCommand('copy');
+                showToast('success', 'Extracted text copied.');
+            }
+        });
+
+        exportBtn.addEventListener('click', () => {
+            const rawText = textOutput.value.trim();
+            if (!rawText) { showToast('error', 'No text to export.'); return; }
+
+            const rows = VeritasOCRUtils.parseGradeRows(rawText);
+            if (rows.length === 0) {
+                showToast('error', 'No recognizable Student ID and score pairs were found.');
+                return;
+            }
+
+            downloadExcel(rows);
+            showToast('success', `Exported ${rows.length} record(s) to Excel.`);
+        });
+
+        /* === Wired to the shared Veritas DB (veritas-db.js) ===
+           Same store students.html reads from, so a synced score
+           shows up on the roster immediately. */
+        syncDbBtn.addEventListener('click', () => {
+            const rawText = textOutput.value.trim();
+            if (!rawText) { showToast('error', 'No text to sync.'); return; }
+
+            const lines = rawText.split(/\r?\n/);
+            let updatedCount = 0, notFoundCount = 0, invalidCount = 0;
+
+            lines.forEach(line => {
+                const parsed = VeritasOCRUtils.parseGradeLine(line);
+                if (!parsed) return;
+
+                const result = updateStudentScoreBySID(parsed.sid, parsed.score);
+
+                if (result.success) updatedCount++;
+                else if (result.reason === 'not-found') notFoundCount++;
+                else invalidCount++;
+            });
+
+            if (updatedCount > 0) {
+                showToast('success', `Synced ${updatedCount} grade(s) to Veritas DB.`);
+                return;
+            }
+            if (notFoundCount > 0) {
+                showToast('error', `${notFoundCount} Student ID(s) were not found. Add them in Students first.`);
+                return;
+            }
+            if (invalidCount > 0) {
+                showToast('error', `${invalidCount} invalid score(s) were detected.`);
+                return;
+            }
+            showToast('error', 'No recognizable records found. Use format like 2024-00001 95 or 2024-00001 48/50.');
+        });
+
+        clearBtn.addEventListener('click', () => {
+            currentImageUrl = null;
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+            dropzoneContent.style.display = 'block';
+            fileInput.value = '';
+            textOutput.value = '';
+            progressContainer.classList.remove('active');
+            extractBtn.disabled = true;
+            progressFill.style.width = '0%';
+            progressPercent.innerText = '0%';
+            progressStatus.innerText = 'Initializing engine...';
+            showToast('info', 'Workspace cleared.');
+        });
+    </script>
+</body>
+</html> Here is a comprehensive, production-grade technical specification for your Veritas grading platform. As a systems engineer, I’ve designed this pipeline to be mathematically sound, performant, and resilient.
+
+We will break this down into three core phases: **OCR Extraction Criteria**, the **Dual-View Reactive Verification Engine**, and the **State-Machine for the Target Outputs (Upload/Update/Draft)**.
+
+---
+
+## 1. OCR Extraction & Validation Criteria
+
+To ensure a high level of data integrity before the UI ever renders, incoming image buffers must pass strict pre-processing metrics and deterministic matching constraints.
+
+### Pre-Processing & Quality Thresholds
+
+* **Resolution Check:** $\ge 150 \text{ DPI}$ minimum; $300 \text{ DPI}$ optimal. Images failing this are rejected upstream to prevent garbage-in/garbage-out cascades.
+* **Binarization & Deskew:** Adaptive thresholding (Otsu's Method) combined with a Radian-based Hough Transform to auto-correct rotation up to $\pm 15^\circ$.
+* **Confidence Scores:** The engine must yield an individual character confidence $C \ge 85\%$. Any character falling below this is automatically flagged with an `untrusted: true` meta-tag to trigger localized UI warnings in the split-view.
+
+### Deterministic Text Normalization & Regex Constraints
+
+The OCR parsing engine extracts text segments and maps them against rigid structural schemas using strict Regular Expressions (RegEx):
+
+| Data Field | Target Component | Regex Constraint | Validation Logic |
+| --- | --- | --- | --- |
+| **Student ID** | `sid` | `^20\d{2}-\d{5}$` | Validates enrollment year prefix (e.g., `2026-00012`). |
+| **Numeric Score** | `score` | `^(100|\d{1,2})$` | Quantizes values strictly between integers `0` and `100`. |
+| **Alpha Grade** | `letter` | `^(A[+-]?|B[+-]?|C[+-]?|D|F)$` | standard high-school/university grading scale mapping. |
+
+---
+
+## 2. Dynamic Split-View Verification Interface
+
+Once the processing pipeline clears, the UI transitions to a highly functional, side-by-side verification interface. This layout maps the source asset directly against the parsed data in real time.
+
+```
++------------------------------------------+------------------------------------------+
+|                 LEFT VIEW                |                RIGHT VIEW                |
+|          Canvas Object Viewport          |        Reactive Tabular Ledger Form      |
+|                                          |                                          |
+|  +------------------------------------+  |  [ Row 1 ]----------------------------+  |
+|  | [Bounding Box: 2026-00012 | 92]    |  |  Student ID: [ 2026-00012 ]           |  |
+|  |                                    |  |  Raw Score:  [ 92         ]           |  |
+|  +------------------------------------+  |  +------------------------------------+  |
+|                                          |  [ Row 2 ]----------------------------+  |
+|  +------------------------------------+  |  Student ID: [ 2026-00054 ]           |  |
+|  | [Bounding Box: 2026-00054 | 88!!]  |  |  Raw Score:  [ 88         ] ! Low Conf|  |
+|  +------------------------------------+  |  +------------------------------------+  |
++------------------------------------------+------------------------------------------+
+
+```
+
+### UI Execution Blueprint
+
+* **Left Pane (The Source Canvas):** A hardware-accelerated canvas viewport rendering the uploaded image. Interactive bounding boxes ($x, y, w, h$) are overlaid on top of the text regions. Clicking a bounding box instantly focuses the corresponding input form field on the right.
+* **Right Pane (The Reactive Ledger):** A form array containing editable input text boxes for each parsed record.
+* **Visual Fault Isolation:** Any field flagged with a low OCR confidence score ($< 85\%$) inherits an explicit CSS warning state (`border: 2px solid var(--error-glow)`), forcing the human validator to audit the entry manually.
+
+---
+
+## 3. Triple-State Action Dispatcher (The Choices)
+
+After manual verification is complete, the user dispatches the verified payload to the Firebase backend. We define this state transitions explicitly via three actions:
+
+```
+                      +-------------------+
+                      |   VERIFIED DATA   |
+                      +---------+---------+
+                                |
+         +----------------------+----------------------+
+         |                      |                      |
+         v                      v                      v
+[ Action: UPLOAD ]     [ Action: UPDATE ]     [ Action: SAVE DRAFT ]
+         |                      |                      |
+         v                      v                      v
+Firebase Cloud Function: Firebase Cloud Function: Firestore Collection:
+ `export_to_excel`      `update_existing_excel`   `draft_ledgers`
+ (Generates fresh stream)  (Appends / Modifies)   (Preserves state)
+
+```
+
+### A. Action: New Upload (`export_to_excel`)
+
+This generates a brand new spreadsheet artifact from scratch. It fires the payload directly to your configured Firebase HTTP endpoint, returning a raw binary stream that triggers an immediate browser-driven download.
+
+```javascript
+// Triggered via a button element with id="btnUploadExcel"
+const dispatchFreshUpload = async (verifiedRows) => {
+    try {
+        const response = await fetch('http://127.0.0.1:5001/veritas-b02e0/us-central1/export_to_excel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rows: verifiedRows })
+        });
+
+        if (!response.ok) throw new Error(`HTTP Compilation Error: Status ${response.status}`);
+
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const executionLink = document.createElement('a');
+        executionLink.href = downloadUrl;
+        executionLink.download = `veritas_ledger_${Date.now()}.xlsx`;
+        document.body.appendChild(executionLink);
+        executionLink.click();
+        executionLink.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+        console.error("Critical Execution Fault on Fresh Upload:", err);
+    }
+};
+
+```
+
+### B. Action: Update Existing Spreadsheet (`update_excel`)
+
+Instead of rewriting the entire system ledger, this action matches the newly parsed entries against pre-existing files or database arrays based on the unique key (`sid`). If the Student ID matches an existing row, it updates the score; otherwise, it appends the new record to the bottom.
+
+```javascript
+// Triggered via a button element with id="btnUpdateExcel"
+const dispatchMutationUpdate = async (verifiedRows) => {
+    try {
+        const response = await fetch('http://127.0.0.1:5001/veritas-b02e0/us-central1/update_existing_excel', {
+            method: 'PATCH', // Semantic standard for partial record updates
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                targetFileId: "ledger_2026_q3.xlsx", // Target identification parameter
+                rows: verifiedRows 
+            })
+        });
+
+        if (!response.ok) throw new Error("Mutation transaction failed on server instance.");
+        console.log("Excel ledger synchronized successfully.");
+    } catch (err) {
+        console.error("Critical Mutation Fault on Ledger Sync:", err);
+    }
+};
+
+```
+
+### C. Action: Save as Draft (`save_as_draft`)
+
+If the grading session is incomplete or the user needs to steps away before generating an Excel file, the state is persisted as an uncommitted draft directly within a Firestore collection (`draft_ledgers`). No file download occurs; instead, the session state is cached in the cloud for later retrieval.
+
+```javascript
+// Triggered via a button element with id="btnSaveDraft"
+const dispatchDraftPersistence = async (verifiedRows) => {
+    try {
+        const response = await fetch('http://127.0.0.1:5001/veritas-b02e0/us-central1/save_draft_ledger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                metadata: {
+                    author: "auth_user_id",
+                    timestamp: new Date().toISOString(),
+                    isCommitted: false
+                },
+                rows: verifiedRows
+            })
+        });
+
+        if (!response.ok) throw new Error("Draft state allocation failed.");
+        alert("Session execution cached smoothly as draft.");
+    } catch (err) {
+        console.error("Persistence Warning on Draft Allocation:", err);
+    }
+};
+
+```
