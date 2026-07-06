@@ -122,6 +122,27 @@ export default function Scanner() {
     loadScript("https://cdn.jsdelivr.net/npm/xlsx@0.18.1/dist/xlsx.full.min.js").catch(() => {});
   }, []);
 
+  // Clipboard paste support (Ctrl+V / Cmd+V)
+  useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            handleFile(file);
+            toast({ title: "Image pasted from clipboard ✓" });
+            break;
+          }
+        }
+      }
+    }
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sync editable records when text changes manually
   useEffect(() => {
     if (!recordsFromOCR) {
