@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Veritas — Create Account</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <style>
+        :root {
+            --bg-base: #060914;
+            --bg-elevated: #0c1224;
+            --bg-glass: rgba(16, 23, 44, 0.55);
+            --bg-glass-strong: rgba(20, 30, 60, 0.75);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(45, 212, 191, 0.35);
+
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            --accent: #2dd4bf;
+            --accent-2: #22d3ee;
+            --accent-3: #818cf8;
+            --danger: #f87171;
+            --success: #34d399;
+
+            --grad-hero: linear-gradient(135deg, #2dd4bf 0%, #22d3ee 45%, #818cf8 100%);
+            --grad-cta: linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%);
+
+            --shadow-glow: 0 0 60px rgba(45, 212, 191, 0.15);
+            --shadow-card: 0 20px 60px rgba(0, 0, 0, 0.45);
+
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+        .bg-ambient {
+            position: fixed; inset: 0; z-index: -2;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(45, 212, 191, 0.10), transparent 45%),
+                radial-gradient(circle at 85% 30%, rgba(129, 140, 248, 0.10), transparent 45%),
+                radial-gradient(circle at 50% 90%, rgba(34, 211, 238, 0.08), transparent 50%),
+                var(--bg-base);
+        }
+        .bg-grid {
+            position: fixed; inset: 0; z-index: -2;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+        }
+
+        /* ---------- Logo ---------- */
+        .logo {
+            display: flex; align-items: center; gap: 12px;
+            font-weight: 800; font-size: 1.5rem;
+            letter-spacing: -0.02em; margin-bottom: 40px;
+        }
+        .logo-mark {
+            width: 42px; height: 42px; border-radius: 12px;
+            background: var(--grad-hero);
+            display: grid; place-items: center;
+            color: #06121a; font-weight: 900; font-size: 1.2rem;
+            box-shadow: 0 6px 20px rgba(45, 212, 191, 0.4);
+        }
+
+        /* ---------- Card ---------- */
+        .auth-card {
+            width: 100%; max-width: 480px;
+            background: var(--bg-glass-strong);
+            backdrop-filter: blur(24px) saturate(140%);
+            -webkit-backdrop-filter: blur(24px) saturate(140%);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-card), var(--shadow-glow);
+            position: relative; overflow: hidden;
+        }
+        .auth-card::before {
+            content: ''; position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+            pointer-events: none;
+        }
+
+        /* ---------- Steps Container ---------- */
+        .step {
+            display: none;
+            animation: fadeSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .step.active { display: block; }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-header {
+            text-align: center; margin-bottom: 32px;
+            position: relative; z-index: 1;
+        }
+        .auth-header h1 {
+            font-size: 1.75rem; font-weight: 700;
+            letter-spacing: -0.02em; margin-bottom: 8px;
+        }
+        .auth-header p {
+            color: var(--text-secondary); font-size: 0.95rem;
+        }
+
+        /* ---------- Progress Bar ---------- */
+        .progress-bar {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; margin-bottom: 28px; position: relative; z-index: 1;
+        }
+        .progress-dot {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: grid; place-items: center;
+            font-size: 0.8rem; font-weight: 700;
+            border: 2px solid var(--border-glass);
+            color: var(--text-muted);
+            transition: all var(--transition);
+            flex-shrink: 0;
+        }
+        .progress-dot.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(45, 212, 191, 0.1);
+            box-shadow: 0 0 20px rgba(45, 212, 191, 0.2);
+        }
+        .progress-dot.done {
+            border-color: var(--success);
+            background: var(--success);
+            color: #06121a;
+        }
+        .progress-line {
+            width: 32px; height: 2px;
+            background: var(--border-glass);
+            border-radius: 2px;
+            position: relative; overflow: hidden;
+        }
+        .progress-line::after {
+            content: ''; position: absolute;
+            left: 0; top: 0; height: 100%; width: 0%;
+            background: var(--success);
+            border-radius: 2px;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .progress-line.filled::after { width: 100%; }
+
+        /* ---------- Form Elements ---------- */
+        .form-group {
+            margin-bottom: 20px; position: relative; z-index: 1;
+        }
+        .form-label {
+            display: block; font-size: 0.85rem; font-weight: 500;
+            color: var(--text-secondary); margin-bottom: 8px;
+        }
+        .input-wrap { position: relative; }
+        .input-wrap i {
+            position: absolute; top: 50%; left: 16px;
+            transform: translateY(-50%);
+            color: var(--text-muted); font-size: 0.95rem;
+            transition: color var(--transition);
+            pointer-events: none;
+        }
+        .input-wrap .toggle-visibility {
+            position: absolute; top: 50%; right: 16px;
+            transform: translateY(-50%);
+            color: var(--text-muted); font-size: 0.95rem;
+            cursor: pointer; pointer-events: auto;
+            transition: color var(--transition);
+        }
+        .input-wrap .toggle-visibility:hover { color: var(--accent); }
+        .form-input {
+            width: 100%; padding: 14px 16px 14px 44px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px; color: var(--text-primary);
+            font-size: 0.95rem; font-family: inherit;
+            transition: all var(--transition);
+        }
+        .form-input:focus {
+            outline: none; border-color: var(--accent);
+            background: rgba(45, 212, 191, 0.04);
+            box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.1);
+        }
+        .form-input:focus ~ i { color: var(--accent); }
+        .form-input.no-icon { padding-left: 16px; }
+        .form-input.has-toggle { padding-right: 44px; }
+
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+        select.form-input option {
+            background: var(--bg-elevated); color: var(--text-primary);
+        }
+
+        .form-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        }
+
+        .form-hint {
+            font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;
+        }
+
+        /* ---------- Password Strength ---------- */
+        .strength-meter {
+            display: flex; gap: 4px; margin-top: 10px;
+        }
+        .strength-bar {
+            height: 4px; flex: 1; border-radius: 2px;
+            background: var(--border-glass);
+            transition: background var(--transition);
+        }
+        .strength-label {
+            font-size: 0.78rem; margin-top: 6px; color: var(--text-muted);
+            transition: color var(--transition);
+        }
+
+        .form-options {
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 28px; font-size: 0.85rem;
+            position: relative; z-index: 1;
+        }
+        .checkbox-wrap {
+            display: flex; align-items: flex-start; gap: 10px;
+            cursor: pointer; color: var(--text-secondary);
+        }
+        .checkbox-wrap input {
+            width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;
+            margin-top: 2px; flex-shrink: 0;
+        }
+        .checkbox-wrap a {
+            color: var(--accent); font-weight: 500;
+        }
+        .checkbox-wrap a:hover { color: var(--accent-2); text-decoration: underline; }
+
+        /* ---------- Error ---------- */
+        .auth-error-msg {
+            display: none; align-items: center; gap: 10px;
+            padding: 12px 16px; margin-bottom: 20px;
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 10px; color: var(--danger);
+            font-size: 0.875rem; position: relative; z-index: 1;
+        }
+        .auth-error-msg.show {
+            display: flex;
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+
+        /* ---------- Avatar Upload ---------- */
+        .avatar-upload {
+            display: flex; flex-direction: column; align-items: center;
+            margin-bottom: 28px; position: relative; z-index: 1;
+        }
+        .avatar-preview {
+            width: 96px; height: 96px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px dashed var(--border-glass);
+            display: grid; place-items: center;
+            font-size: 2rem; color: var(--text-muted);
+            cursor: pointer; transition: all var(--transition);
+            overflow: hidden; position: relative;
+        }
+        .avatar-preview:hover {
+            border-color: var(--accent);
+            background: rgba(45, 212, 191, 0.05);
+        }
+        .avatar-preview img {
+            width: 100%; height: 100%; object-fit: cover;
+            position: absolute; inset: 0;
+        }
+        .avatar-preview .avatar-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: grid; place-items: center;
+            opacity: 0; transition: opacity var(--transition);
+            border-radius: 50%;
+        }
+        .avatar-preview:hover .avatar-overlay { opacity: 1; }
+        .avatar-text {
+            margin-top: 10px; font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ---------- Summary (review step) ---------- */
+        .summary-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 24px;
+            position: relative; z-index: 1;
+        }
+        .summary-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-glass);
+            font-size: 0.9rem;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-row span:first-child { color: var(--text-muted); }
+        .summary-row span:last-child { color: var(--text-primary); font-weight: 500; text-align: right; }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 10px; padding: 14px 22px; border-radius: 12px;
+            font-weight: 600; font-size: 1rem;
+            transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+            width: 100%; position: relative; z-index: 1;
+        }
+        .btn-primary {
+            background: var(--grad-cta); color: #06121a;
+            box-shadow: 0 8px 30px rgba(45, 212, 191, 0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(45, 212, 191, 0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none;
+            box-shadow: none;
+        }
+        .btn-ghost {
+            background: transparent; color: var(--text-secondary);
+            border: 1px solid var(--border-glass);
+            margin-top: 12px;
+        }
+        .btn-ghost:hover {
+            border-color: var(--accent); color: var(--accent);
+        }
+
+        /* ---------- Loading Spinner ---------- */
+        .btn .spinner {
+            display: none; width: 20px; height: 20px;
+            border: 2.5px solid rgba(6, 18, 26, 0.3);
+            border-top-color: #06121a;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .btn.loading .spinner { display: block; }
+        .btn.loading .btn-text { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ---------- Footer ---------- */
+        .auth-footer {
+            text-align: center; margin-top: 28px; font-size: 0.9rem;
+            color: var(--text-secondary); position: relative; z-index: 1;
+        }
+        .auth-footer a {
+            color: var(--accent); font-weight: 600;
+            transition: color var(--transition);
+        }
+        .auth-footer a:hover { color: var(--accent-2); text-decoration: underline; }
+
+        /* ---------- Success Checkmark ---------- */
+        .success-icon {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: rgba(52, 211, 153, 0.1);
+            border: 2px solid var(--success);
+            display: grid; place-items: center;
+            margin: 0 auto 20px; font-size: 1.8rem; color: var(--success);
+            animation: popIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 520px) {
+            .auth-card { padding: 30px 24px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-ambient" aria-hidden="true"></div>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <a href="index.html" class="logo">
+        <div class="logo-mark">V</div>
+        <span>Veritas</span>
+    </a>
+
+    <div class="auth-card">
+
+        <!-- ============ STEP 1: ACCOUNT ============ -->
+        <div class="step active" id="step-account">
+            <div class="progress-bar">
+                <div class="progress-dot active" id="dot-1">1</div>
+                <div class="progress-line" id="line-1"></div>
+                <div class="progress-dot" id="dot-2">2</div>
+                <div class="progress-line" id="line-2"></div>
+                <div class="progress-dot" id="dot-3">3</div>
+            </div>
+
+            <div class="auth-header">
+                <h1>Create Your Account</h1>
+                <p>Start building your grading ledger with Veritas</p>
+            </div>
+
+            <div class="auth-error-msg" id="account-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span></span>
+            </div>
+
+            <form id="account-form">
+                <div class="form-group">
+                    <label for="reg-email" class="form-label">Email Address</label>
+                    <div class="input-wrap">
+                        <input type="email" id="reg-email" class="form-input" placeholder="you@school.edu" required>
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-password" class="form-label">Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="reg-password" class="form-input has-toggle" placeholder="Create a password" required>
+                        <i class="fa-solid fa-lock"></i>
+                        <i class="fa-solid fa-eye toggle-visibility" data-target="reg-password"></i>
+                    </div>
+                    <div class="strength-meter">
+                        <div class="strength-bar" id="bar-1"></div>
+                        <div class="strength-bar" id="bar-2"></div>
+                        <div class="strength-bar" id="bar-3"></div>
+                        <div class="strength-bar" id="bar-4"></div>
+                    </div>
+                    <div class="strength-label" id="strength-label">Use 8+ characters with a mix of letters &amp; numbers</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-password-confirm" class="form-label">Confirm Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="reg-password-confirm" class="form-input has-toggle" placeholder="Re-enter your password" required>
+                        <i class="fa-solid fa-lock"></i>
+                        <i class="fa-solid fa-eye toggle-visibility" data-target="reg-password-confirm"></i>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-wrap">
+                        <input type="checkbox" id="agree-terms" required>
+                        <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="account-btn">
+                    <div class="spinner"></div>
+                    <span class="btn-text">Continue <i class="fa-solid fa-arrow-right"></i></span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="login.html">Sign in</a>
+            </div>
+        </div>
+
+        <!-- ============ STEP 2: PROFILE ============ -->
+        <div class="step" id="step-profile">
+            <div class="progress-bar">
+                <div class="progress-dot done"><i class="fa-solid fa-check" style="font-size:0.7rem"></i></div>
+                <div class="progress-line filled"></div>
+                <div class="progress-dot active">2</div>
+                <div class="progress-line"></div>
+                <div class="progress-dot">3</div>
+            </div>
+
+            <div class="auth-header">
+                <h1>Complete Your Profile</h1>
+                <p>Tell us a bit about yourself to get started</p>
+            </div>
+
+            <div class="auth-error-msg" id="profile-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span></span>
+            </div>
+
+            <form id="profile-form">
+                <!-- Avatar -->
+                <div class="avatar-upload">
+                    <div class="avatar-preview" id="avatar-preview" title="Upload photo">
+                        <i class="fa-solid fa-camera"></i>
+                        <div class="avatar-overlay"><i class="fa-solid fa-pen" style="font-size:1rem;color:#fff"></i></div>
+                    </div>
+                    <input type="file" id="avatar-input" accept="image/*" hidden>
+                    <span class="avatar-text">Click to upload photo</span>
+                </div>
+
+                <!-- Name -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first-name" class="form-label">First Name</label>
+                        <input type="text" id="first-name" class="form-input no-icon" placeholder="First name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name" class="form-label">Last Name</label>
+                        <input type="text" id="last-name" class="form-input no-icon" placeholder="Last name" required>
+                    </div>
+                </div>
+
+                <!-- Role -->
+                <div class="form-group">
+                    <label for="user-role" class="form-label">Role</label>
+                    <div class="input-wrap">
+                        <select id="user-role" class="form-input" required>
+                            <option value="" disabled selected>Select your role</option>
+                            <option value="teacher">Teacher / Instructor</option>
+                            <option value="admin">Administrator</option>
+                            <option value="department_head">Department Head</option>
+                            <option value="registrar">Registrar Staff</option>
+                        </select>
+                        <i class="fa-solid fa-user-tag"></i>
+                    </div>
+                </div>
+
+                <!-- Department -->
+                <div class="form-group">
+                    <label for="department" class="form-label">Department</label>
+                    <div class="input-wrap">
+                        <select id="department" class="form-input" required>
+                            <option value="" disabled selected>Select department</option>
+                            <option value="math">Mathematics</option>
+                            <option value="science">Science</option>
+                            <option value="english">English</option>
+                            <option value="filipino">Filipino</option>
+                            <option value="social_studies">Social Studies</option>
+                            <option value="mapeh">MAPEH</option>
+                            <option value="ict">ICT / Computer Studies</option>
+                            <option value="abm">ABM</option>
+                            <option value="stem">STEM</option>
+                            <option value="humss">HUMSS</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                </div>
+
+                <!-- ID Number -->
+                <div class="form-group">
+                    <label for="id-number" class="form-label">Employee ID Number</label>
+                    <div class="input-wrap">
+                        <input type="text" id="id-number" class="form-input" placeholder="e.g. TCH-2024-001" required>
+                        <i class="fa-solid fa-id-badge"></i>
+                    </div>
+                </div>
+
+                <!-- Bio -->
+                <div class="form-group">
+                    <label for="bio" class="form-label">Short Bio <span style="color:var(--text-muted)">(optional)</span></label>
+                    <textarea id="bio" class="form-input no-icon" placeholder="A brief introduction about yourself..." rows="3" style="min-height:80px;resize:vertical;"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="profile-btn">
+                    <div class="spinner"></div>
+                    <span class="btn-text">Continue <i class="fa-solid fa-arrow-right"></i></span>
+                </button>
+
+                <button type="button" class="btn btn-ghost" onclick="goToStep('account')">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+            </form>
+        </div>
+
+        <!-- ============ STEP 3: REVIEW & CONFIRM ============ -->
+        <div class="step" id="step-review">
+            <div class="progress-bar">
+                <div class="progress-dot done"><i class="fa-solid fa-check" style="font-size:0.7rem"></i></div>
+                <div class="progress-line filled"></div>
+                <div class="progress-dot done"><i class="fa-solid fa-check" style="font-size:0.7rem"></i></div>
+                <div class="progress-line filled"></div>
+                <div class="progress-dot active">3</div>
+            </div>
+
+            <div class="auth-header">
+                <h1>Review &amp; Confirm</h1>
+                <p>Make sure everything looks right before we create your account</p>
+            </div>
+
+            <div class="summary-card" id="summary-card">
+                <!-- filled by JS -->
+            </div>
+            <div>
+            <a href="dashboard.html" class="btn btn-primary" id="confirm-btn">
+                <div class="spinner"></div>
+                <span class="btn-text"><i class="fa-solid fa-user-check"></i> Create Account</span>
+            </a>
+            </div>
+
+            <button type="button" class="btn btn-ghost" onclick="goToStep('profile')">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+        </div>
+
+        <!-- ============ STEP 4: SUCCESS ============ -->
+        <div class="step" id="step-done">
+            <div class="auth-header">
+                <div class="success-icon">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h1>Account Created!</h1>
+                <p id="done-message">Welcome to Veritas. Your workspace is ready.</p>
+            </div>
+
+            <button class="btn btn-primary" onclick="launchDashboard()">
+                <span class="btn-text"><i class="fa-solid fa-rocket"></i> Go to Dashboard</span>
+            </button>
+        </div>
+
+    </div>
+
+    
+        <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    updateProfile
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAiccBr8Nbw9OiXkkUxwTx_uQZ4Xxmh1_4",
+    authDomain: "veritas-b02e0.firebaseapp.com",
+    projectId: "veritas-b02e0",
+    storageBucket: "veritas-b02e0.firebasestorage.app",
+    messagingSenderId: "40953667224",
+    appId: "1:40953667224:web:e414d966e4cf980dbf7aed",
+    measurementId: "G-NT445XBNLN"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+        // =============================================
+        // STATE
+        // =============================================
+        const state = {
+            email: '',
+            password: '',
+            firstName: '',
+            lastName: '',
+            role: '',
+            department: '',
+            idNumber: '',
+            bio: '',
+            avatarDataUrl: null
+        };
+
+        const stepOrder = ['account', 'profile', 'review', 'done'];
+
+        // =============================================
+        // STEP NAVIGATION
+        // =============================================
+        function goToStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step-' + step).classList.add('active');
+            document.querySelectorAll('.auth-error-msg').forEach(e => e.classList.remove('show'));
+
+            // sync the top progress bar on step 1 if returning to it
+            if (step === 'account') {
+                document.getElementById('dot-1').className = 'progress-dot active';
+                document.getElementById('dot-2').className = 'progress-dot';
+                document.getElementById('line-1').className = 'progress-line';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showError(id, message) {
+            const el = document.getElementById(id);
+            el.querySelector('span').textContent = message;
+            el.classList.add('show');
+        }
+
+        function setLoading(btnId, loading) {
+            const btn = document.getElementById(btnId);
+            if (loading) {
+                btn.classList.add('loading');
+                btn.disabled = true;
+            } else {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        // =============================================
+        // PASSWORD VISIBILITY TOGGLE
+        // =============================================
+        document.querySelectorAll('.toggle-visibility').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const input = document.getElementById(icon.dataset.target);
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                icon.classList.toggle('fa-eye', !isPassword);
+                icon.classList.toggle('fa-eye-slash', isPassword);
+            });
+        });
+
+        // =============================================
+        // PASSWORD STRENGTH METER
+        // =============================================
+        const pwInput = document.getElementById('reg-password');
+        const bars = [1, 2, 3, 4].map(n => document.getElementById('bar-' + n));
+        const strengthLabel = document.getElementById('strength-label');
+        const strengthColors = ['#f87171', '#fb923c', '#facc15', '#34d399'];
+        const strengthText = ['Weak', 'Fair', 'Good', 'Strong'];
+
+        function scorePassword(pw) {
+            let score = 0;
+            if (pw.length >= 8) score++;
+            if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+            if (/\d/.test(pw)) score++;
+            if (/[^A-Za-z0-9]/.test(pw)) score++;
+            return score;
+        }
+
+        pwInput.addEventListener('input', () => {
+            const pw = pwInput.value;
+            const score = pw.length === 0 ? 0 : Math.max(1, scorePassword(pw));
+
+            bars.forEach((bar, i) => {
+                bar.style.background = i < score ? strengthColors[score - 1] : 'var(--border-glass)';
+            });
+
+            if (pw.length === 0) {
+                strengthLabel.textContent = 'Use 8+ characters with a mix of letters & numbers';
+                strengthLabel.style.color = 'var(--text-muted)';
+            } else {
+                strengthLabel.textContent = strengthText[score - 1];
+                strengthLabel.style.color = strengthColors[score - 1];
+            }
+        });
+
+        // =============================================
+        // AVATAR UPLOAD
+        // =============================================
+        const avatarPreview = document.getElementById('avatar-preview');
+        const avatarInput = document.getElementById('avatar-input');
+
+        avatarPreview.addEventListener('click', () => avatarInput.click());
+
+        avatarInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showError('profile-error', 'Please select a valid image file.');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showError('profile-error', 'Image must be under 5MB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                state.avatarDataUrl = ev.target.result;
+                let img = avatarPreview.querySelector('img');
+                if (!img) {
+                    img = document.createElement('img');
+                    avatarPreview.appendChild(img);
+                }
+                img.src = ev.target.result;
+                document.querySelector('.avatar-text').textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // =============================================
+        // STEP 1: ACCOUNT (email + password)
+        // =============================================
+        document.getElementById('account-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-password-confirm').value;
+            const agreed = document.getElementById('agree-terms').checked;
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                showError('account-error', 'Please enter a valid email address.');
+                return;
+            }
+            if (password.length < 8) {
+                showError('account-error', 'Password must be at least 8 characters.');
+                return;
+            }
+            if (password !== confirm) {
+                showError('account-error', 'Passwords do not match.');
+                return;
+            }
+            if (!agreed) {
+                showError('account-error', 'Please agree to the Terms of Service and Privacy Policy.');
+                return;
+            }
+
+            setLoading('account-btn', true);
+
+            setTimeout(() => {
+                state.email = email;
+                state.password = password;
+
+                setLoading('account-btn', false);
+                goToStep('profile');
+            }, 1000);
+        });
+
+        // =============================================
+        // STEP 2: PROFILE
+        // =============================================
+        document.getElementById('profile-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('first-name').value.trim();
+            const lastName = document.getElementById('last-name').value.trim();
+            const role = document.getElementById('user-role').value;
+            const department = document.getElementById('department').value;
+            const idNumber = document.getElementById('id-number').value.trim();
+            const bio = document.getElementById('bio').value.trim();
+
+            if (!firstName || !lastName) {
+                showError('profile-error', 'Please enter your full name.');
+                return;
+            }
+            if (!role) {
+                showError('profile-error', 'Please select your role.');
+                return;
+            }
+            if (!department) {
+                showError('profile-error', 'Please select your department.');
+                return;
+            }
+            if (!idNumber) {
+                showError('profile-error', 'Please enter your Employee ID.');
+                return;
+            }
+
+            setLoading('profile-btn', true);
+
+            setTimeout(() => {
+                state.firstName = firstName;
+                state.lastName = lastName;
+                state.role = role;
+                state.department = department;
+                state.idNumber = idNumber;
+                state.bio = bio;
+
+                buildSummary();
+                setLoading('profile-btn', false);
+                goToStep('review');
+            }, 800);
+        });
+
+        // =============================================
+        // STEP 3: REVIEW
+        // =============================================
+        const roleLabel = {
+            teacher: 'Teacher / Instructor',
+            admin: 'Administrator',
+            department_head: 'Department Head',
+            registrar: 'Registrar Staff'
+        };
+        const deptLabel = {
+            math: 'Mathematics', science: 'Science', english: 'English',
+            filipino: 'Filipino', social_studies: 'Social Studies', mapeh: 'MAPEH',
+            ict: 'ICT / Computer Studies', abm: 'ABM', stem: 'STEM', humss: 'HUMSS', other: 'Other'
+        };
+
+        function buildSummary() {
+            const card = document.getElementById('summary-card');
+            card.innerHTML = `
+                <div class="summary-row"><span>Name</span><span>${escapeHtml(state.firstName)} ${escapeHtml(state.lastName)}</span></div>
+                <div class="summary-row"><span>Email</span><span>${escapeHtml(state.email)}</span></div>
+                <div class="summary-row"><span>Role</span><span>${roleLabel[state.role] || '—'}</span></div>
+                <div class="summary-row"><span>Department</span><span>${deptLabel[state.department] || '—'}</span></div>
+                <div class="summary-row"><span>Employee ID</span><span>${escapeHtml(state.idNumber)}</span></div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // =============================================
+        // STEP 4: SUBMIT REGISTRATION
+        // =============================================
+        async function submitRegistration() {
+            setLoading('confirm-btn', true);
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, state.email, state.password);
+                const user = userCredential.user;
+                await updateProfile(user, {
+                    displayName: `${state.firstName} ${state.lastName}`
+                });
+
+                const profile = {
+                    uid: user.uid,
+                    email: state.email,
+                    firstName: state.firstName,
+                    lastName: state.lastName,
+                    fullName: `${state.firstName} ${state.lastName}`,
+                    role: state.role,
+                    department: state.department,
+                    idNumber: state.idNumber,
+                    bio: state.bio,
+                    avatar: state.avatarDataUrl,
+                    createdAt: serverTimestamp(),
+                    lastLoginAt: serverTimestamp()
+                };
+
+                await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
+
+                localStorage.setItem('veritas_profile', JSON.stringify({ ...profile, createdAt: new Date().toISOString() }));
+                localStorage.setItem('veritas_logged_in', 'true');
+                localStorage.setItem('veritas_email', state.email);
+
+                document.getElementById('done-message').textContent =
+                    `Welcome, ${state.firstName}! Your workspace is ready.`;
+
+                setLoading('confirm-btn', false);
+                goToStep('done');
+            } catch (error) {
+                setLoading('confirm-btn', false);
+                showError('account-error', error.message || 'Unable to create account.');
+                goToStep('account');
+            }
+        }
+
+        // =============================================
+        // LAUNCH DASHBOARD
+        // =============================================
+        function launchDashboard() {
+            window.location.href = "dashboard.html";
+        }
+
+        window.goToStep = goToStep;
+        window.submitRegistration = submitRegistration;
+        window.launchDashboard = launchDashboard;
+    </script>
+</body>
+</html>

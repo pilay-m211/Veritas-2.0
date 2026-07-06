@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Veritas | Login</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Inter',sans-serif;
+}
+
+body{
+
+background:#050B18;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+overflow:hidden;
+
+}
+
+body::before{
+
+content:"";
+position:absolute;
+width:700px;
+height:700px;
+background:radial-gradient(circle,#22d3ee30,transparent);
+top:-250px;
+right:-200px;
+
+}
+
+body::after{
+
+content:"";
+position:absolute;
+width:600px;
+height:600px;
+background:radial-gradient(circle,#818cf830,transparent);
+bottom:-250px;
+left:-180px;
+
+}
+
+.card{
+
+width:430px;
+background:rgba(16,23,44,.85);
+backdrop-filter:blur(20px);
+border:1px solid rgba(255,255,255,.08);
+border-radius:24px;
+padding:45px;
+box-shadow:0 25px 70px rgba(0,0,0,.45);
+
+position:relative;
+z-index:2;
+
+}
+
+.logo{
+
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+margin-bottom:30px;
+
+}
+
+.logo-circle{
+
+width:52px;
+height:52px;
+border-radius:14px;
+background:linear-gradient(135deg,#2dd4bf,#22d3ee,#818cf8);
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+font-size:24px;
+font-weight:bold;
+color:#071018;
+
+}
+
+.logo h2{
+
+color:white;
+font-weight:800;
+
+}
+
+.title{
+
+text-align:center;
+margin-bottom:30px;
+
+}
+
+.title h1{
+
+color:white;
+font-size:28px;
+margin-bottom:8px;
+
+}
+
+.title p{
+
+color:#94a3b8;
+font-size:15px;
+
+}
+
+.input-group{
+
+margin-bottom:20px;
+
+}
+
+.input-group label{
+
+display:block;
+margin-bottom:8px;
+font-size:14px;
+color:#cbd5e1;
+
+}
+
+.input-box{
+
+position:relative;
+
+}
+
+.input-box input{
+
+width:100%;
+padding:15px 18px 15px 50px;
+
+border:none;
+outline:none;
+
+border-radius:12px;
+
+background:#0d172d;
+
+color:white;
+
+font-size:15px;
+
+transition:.3s;
+
+}
+
+.input-box input:focus{
+
+box-shadow:0 0 0 2px #22d3ee;
+
+}
+
+.input-box i{
+
+position:absolute;
+left:18px;
+top:17px;
+color:#64748b;
+
+}
+
+.password-toggle{
+
+position:absolute;
+right:18px;
+top:17px;
+
+cursor:pointer;
+
+}
+
+.options{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+margin-bottom:25px;
+
+font-size:14px;
+
+}
+
+.options a{
+
+color:#22d3ee;
+text-decoration:none;
+
+}
+
+.options label{
+
+color:#94a3b8;
+
+}
+
+button{
+
+width:100%;
+padding:15px;
+
+border:none;
+border-radius:12px;
+
+background:linear-gradient(135deg,#2dd4bf,#22d3ee);
+
+color:#06121a;
+
+font-size:16px;
+
+font-weight:700;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+button:hover{
+
+transform:translateY(-2px);
+
+box-shadow:0 15px 30px rgba(34,211,238,.3);
+
+}
+
+#error{
+
+display:none;
+
+background:#7f1d1d;
+
+color:white;
+
+padding:12px;
+
+border-radius:10px;
+
+margin-bottom:20px;
+
+font-size:14px;
+
+}
+
+.loading{
+
+display:none;
+text-align:center;
+margin-top:20px;
+color:#94a3b8;
+
+}
+
+.footer{
+
+margin-top:30px;
+text-align:center;
+font-size:14px;
+color:#94a3b8;
+
+}
+
+.footer a{
+
+color:#22d3ee;
+text-decoration:none;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="logo">
+
+<div class="logo-circle">
+
+V
+
+</div>
+
+<h2>VERITAS</h2>
+
+</div>
+
+<div class="title">
+
+<h1>Welcome Back</h1>
+
+<p>Sign in to continue to your dashboard.</p>
+
+</div>
+
+<div id="error"></div>
+
+<form id="loginForm">
+
+<div class="input-group">
+
+<label>Email Address</label>
+
+<div class="input-box">
+
+<i class="fa-solid fa-envelope"></i>
+
+<input
+type="email"
+id="email"
+placeholder="you@school.edu"
+required>
+
+</div>
+
+</div>
+
+<div class="input-group">
+
+<label>Password</label>
+
+<div class="input-box">
+
+<i class="fa-solid fa-lock"></i>
+
+<input
+type="password"
+id="password"
+placeholder="Enter your password"
+required>
+
+<i
+class="fa-solid fa-eye password-toggle"
+id="togglePassword"></i>
+
+</div>
+
+</div>
+
+<div class="options">
+
+<label>
+
+<input
+type="checkbox"
+id="remember">
+
+Remember Me
+
+</label>
+
+<a href="login/forpass.html">
+
+Forgot Password?
+
+</a>
+
+</div>
+
+<button id="loginBtn">
+
+<i class="fa-solid fa-right-to-bracket"></i>
+
+Login
+
+</button>
+
+<div class="loading" id="loading">
+
+Signing in...
+
+</div>
+
+</form>
+
+<div class="footer">
+
+Don't have an account?
+
+<a href="register.html">
+
+Create One
+
+</a>
+
+</div>
+
+</div>
+<script type="module">
+
+// ==========================================
+// FIREBASE IMPORTS
+// ==========================================
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
+    sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    addDoc,
+    collection,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+
+// ==========================================
+// FIREBASE CONFIG
+// ==========================================
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAiccBr8Nbw9OiXkkUxwTx_uQZ4Xxmh1_4",
+    authDomain: "veritas-b02e0.firebaseapp.com",
+    projectId: "veritas-b02e0",
+    storageBucket: "veritas-b02e0.firebasestorage.app",
+    messagingSenderId: "40953667224",
+    appId: "1:40953667224:web:e414d966e4cf980dbf7aed",
+    measurementId: "G-NT445XBNLN"
+};
+
+
+// ==========================================
+// INITIALIZE FIREBASE
+// ==========================================
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+// ==========================================
+// DOM ELEMENTS
+// ==========================================
+
+const loginForm = document.getElementById("loginForm");
+
+const emailInput = document.getElementById("email");
+
+const passwordInput = document.getElementById("password");
+
+const rememberCheckbox = document.getElementById("remember");
+
+const loginBtn = document.getElementById("loginBtn");
+
+const loading = document.getElementById("loading");
+
+const errorBox = document.getElementById("error");
+
+const togglePassword = document.getElementById("togglePassword");
+
+
+// ==========================================
+// PASSWORD TOGGLE
+// ==========================================
+
+togglePassword.addEventListener("click", () => {
+
+    if (passwordInput.type === "password") {
+
+        passwordInput.type = "text";
+
+        togglePassword.classList.remove("fa-eye");
+
+        togglePassword.classList.add("fa-eye-slash");
+
+    } else {
+
+        passwordInput.type = "password";
+
+        togglePassword.classList.remove("fa-eye-slash");
+
+        togglePassword.classList.add("fa-eye");
+
+    }
+
+});
+
+
+// ==========================================
+// ERROR MESSAGE
+// ==========================================
+
+function showError(message){
+
+    errorBox.style.display = "block";
+
+    errorBox.innerHTML = message;
+
+}
+
+function hideError(){
+
+    errorBox.style.display = "none";
+
+}
+
+
+// ==========================================
+// BUTTON LOADING
+// ==========================================
+
+function setLoading(isLoading){
+
+    loginBtn.disabled = isLoading;
+
+    loading.style.display = isLoading ? "block" : "none";
+
+    loginBtn.style.opacity = isLoading ? ".7" : "1";
+
+}
+
+
+// ==========================================
+// REMEMBER EMAIL
+// ==========================================
+
+const savedEmail = localStorage.getItem("remember_email");
+
+if(savedEmail){
+
+    emailInput.value = savedEmail;
+
+    rememberCheckbox.checked = true;
+
+}
+
+
+// ==========================================
+// LOGIN
+// ==========================================
+
+loginForm.addEventListener("submit", async (e)=>{
+
+    e.preventDefault();
+
+    hideError();
+
+    const email = emailInput.value.trim();
+
+    const password = passwordInput.value;
+
+    if(email==="" || password===""){
+
+        showError("Please fill in all required fields.");
+
+        return;
+
+    }
+
+    try{
+
+        setLoading(true);
+
+        await setPersistence(
+
+            auth,
+
+            rememberCheckbox.checked
+
+            ? browserLocalPersistence
+
+            : browserSessionPersistence
+
+        );
+
+        const userCredential = await signInWithEmailAndPassword(
+
+            auth,
+
+            email,
+
+            password
+
+        );
+
+        const user = userCredential.user;
+        const profileRef = doc(db, "users", user.uid);
+        const profileSnap = await getDoc(profileRef);
+
+        const profileData = profileSnap.exists() ? profileSnap.data() : {};
+        const fullName = profileData.fullName || profileData.firstName || user.displayName || email.split("@")[0];
+        const firstName = profileData.firstName || (typeof fullName === "string" ? fullName.split(" ")[0] : "");
+        const lastName = profileData.lastName || (typeof fullName === "string" ? fullName.split(" ").slice(1).join(" ") : "");
+
+        const profile = {
+            uid: user.uid,
+            email: user.email || email,
+            firstName,
+            lastName,
+            fullName,
+            role: profileData.role || "teacher",
+            department: profileData.department || "other",
+            idNumber: profileData.idNumber || "",
+            bio: profileData.bio || "",
+            avatar: profileData.avatar || null,
+            createdAt: profileData.createdAt || serverTimestamp(),
+            lastLoginAt: serverTimestamp()
+        };
+
+        await setDoc(profileRef, profile, { merge: true });
+        await addDoc(collection(db, "users", user.uid, "activity"), {
+            type: "login",
+            title: "Signed in",
+            detail: "Signed into Veritas",
+            createdAt: serverTimestamp()
+        });
+
+        localStorage.setItem("veritas_profile", JSON.stringify(profile));
+        localStorage.setItem("veritas_logged_in", "true");
+        localStorage.setItem("veritas_email", user.email || email);
+
+        if(rememberCheckbox.checked){
+
+            localStorage.setItem(
+
+                "remember_email",
+
+                email
+
+            );
+
+        }else{
+
+            localStorage.removeItem(
+
+                "remember_email"
+
+            );
+
+        }
+
+        window.location.href="dashboard.html";
+
+    }
+
+    catch(error){
+
+        let message="Unable to sign in.";
+
+        switch(error.code){
+
+            case "auth/user-not-found":
+
+                message="No account exists with this email.";
+
+                break;
+
+            case "auth/wrong-password":
+
+                message="Incorrect password.";
+
+                break;
+
+            case "auth/invalid-email":
+
+                message="Invalid email address.";
+
+                break;
+
+            case "auth/invalid-credential":
+
+                message="Invalid email or password.";
+
+                break;
+
+            case "auth/too-many-requests":
+
+                message="Too many attempts. Please try again later.";
+
+                break;
+
+            default:
+
+                message=error.message;
+
+        }
+
+        showError(message);
+
+    }
+
+    finally{
+
+        setLoading(false);
+
+    }
+
+});
+
+
+// ==========================================
+// AUTO LOGIN
+// ==========================================
+
+onAuthStateChanged(auth,(user)=>{
+
+    if(user){
+
+        window.location.href="dashboard.html";
+
+    }
+
+});
+
+
+// ==========================================
+// FORGOT PASSWORD
+// ==========================================
+
+const forgotLink = document.querySelector(".options a");
+
+forgotLink.addEventListener("click", async(e)=>{
+
+    e.preventDefault();
+
+    hideError();
+
+    const email=emailInput.value.trim();
+
+    if(email===""){
+
+        showError("Enter your email first.");
+
+        return;
+
+    }
+
+    try{
+
+        await sendPasswordResetEmail(auth,email);
+
+        alert("Password reset email sent.");
+
+    }
+
+    catch(error){
+
+        showError(error.message);
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>
