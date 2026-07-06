@@ -22,6 +22,8 @@ import type {
 import type {
   BulkGradeInput,
   BulkGradeResult,
+  BulkStudentInput,
+  BulkStudentResult,
   Class,
   ClassInput,
   ClassUpdate,
@@ -299,6 +301,76 @@ export const useCreateStudent = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateStudentMutationOptions(options));
+    }
+
+export const getImportStudentsUrl = () => {
+
+
+
+
+  return `/api/students/import`
+}
+
+/**
+ * @summary Bulk import students from spreadsheet data
+ */
+export const importStudents = async (bulkStudentInput: BulkStudentInput, options?: RequestInit): Promise<BulkStudentResult> => {
+
+  return customFetch<BulkStudentResult>(getImportStudentsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bulkStudentInput)
+  }
+);}
+
+
+
+
+export const getImportStudentsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof importStudents>>, TError,{data: BodyType<BulkStudentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof importStudents>>, TError,{data: BodyType<BulkStudentInput>}, TContext> => {
+
+const mutationKey = ['importStudents'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof importStudents>>, {data: BodyType<BulkStudentInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  importStudents(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ImportStudentsMutationResult = NonNullable<Awaited<ReturnType<typeof importStudents>>>
+    export type ImportStudentsMutationBody = BodyType<BulkStudentInput>
+    export type ImportStudentsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Bulk import students from spreadsheet data
+ */
+export const useImportStudents = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof importStudents>>, TError,{data: BodyType<BulkStudentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof importStudents>>,
+        TError,
+        {data: BodyType<BulkStudentInput>},
+        TContext
+      > => {
+      return useMutation(getImportStudentsMutationOptions(options));
     }
 
 export const getGetStudentUrl = (id: number,) => {

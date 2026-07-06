@@ -8,6 +8,8 @@
 
 export * from './bulkGradeInput';
 export * from './bulkGradeResult';
+export * from './bulkStudentInput';
+export * from './bulkStudentResult';
 export * from './class';
 export * from './classInput';
 export * from './classUpdate';

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db, studentsTable, classesTable, gradesTable } from "@workspace/db";
 import { eq, ilike, or, desc, sql } from "drizzle-orm";
-import { ListStudentsQueryParams, CreateStudentBody, UpdateStudentBody, GetStudentParams, UpdateStudentParams, DeleteStudentParams } from "@workspace/api-zod";
+import { ListStudentsQueryParams, CreateStudentBody, UpdateStudentBody, GetStudentParams, UpdateStudentParams, DeleteStudentParams, ImportStudentsBody } from "@workspace/api-zod";
 
 const router = Router();
 
@@ -37,6 +37,31 @@ router.post("/students", async (req, res) => {
   if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
   const [student] = await db.insert(studentsTable).values(parsed.data).returning();
   res.status(201).json({ ...student, className: null, latestScore: null, createdAt: student.createdAt.toISOString() });
+});
+
+router.post("/students/import", async (req, res) => {
+  const parsed = ImportStudentsBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
+  const { students, classId, skipDuplicates } = parsed.data;
+
+  let imported = 0, skipped = 0, errors = 0;
+  const errorDetails: string[] = [];
+
+  for (const s of students) {
+    try {
+      if (skipDuplicates) {
+        const existing = await db.select({ id: studentsTable.id }).from(studentsTable).where(eq(studentsTable.studentId, s.studentId));
+        if (existing.length) { skipped++; continue; }
+      }
+      await db.insert(studentsTable).values({ studentId: s.studentId, firstName: s.firstName, lastName: s.lastName, classId: classId ?? s.classId ?? null });
+      imported++;
+    } catch (err: any) {
+      errors++;
+      errorDetails.push(`${s.studentId}: ${err?.message ?? "unknown error"}`);
+    }
+  }
+
+  res.json({ imported, skipped, errors, total: students.length, errorDetails });
 });
 
 router.get("/students/:id", async (req, res) => {

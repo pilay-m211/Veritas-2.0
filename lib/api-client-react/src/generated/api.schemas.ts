@@ -144,6 +144,21 @@ export interface Draft {
   createdAt: string;
 }
 
+export interface BulkStudentInput {
+  students: StudentInput[];
+  /** @nullable */
+  classId?: number | null;
+  skipDuplicates?: boolean;
+}
+
+export interface BulkStudentResult {
+  imported: number;
+  skipped: number;
+  errors: number;
+  total: number;
+  errorDetails?: string[];
+}
+
 export interface DraftInput {
   name: string;
   rawText: string;

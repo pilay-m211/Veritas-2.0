@@ -60,6 +60,29 @@ export const CreateStudentResponse = zod.object({
 
 
 /**
+ * @summary Bulk import students from spreadsheet data
+ */
+export const ImportStudentsBody = zod.object({
+  "students": zod.array(zod.object({
+  "studentId": zod.string(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "classId": zod.number().nullish()
+})),
+  "classId": zod.number().nullish(),
+  "skipDuplicates": zod.boolean().optional()
+})
+
+export const ImportStudentsResponse = zod.object({
+  "imported": zod.number(),
+  "skipped": zod.number(),
+  "errors": zod.number(),
+  "total": zod.number(),
+  "errorDetails": zod.array(zod.string()).optional()
+})
+
+
+/**
  * @summary Get student by ID
  */
 export const GetStudentParams = zod.object({

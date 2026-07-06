@@ -76,6 +76,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/Student"
 
+  /students/import:
+    post:
+      operationId: importStudents
+      tags: [students]
+      summary: Bulk import students from spreadsheet data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkStudentInput"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkStudentResult"
+
   /students/{id}:
     get:
       operationId: getStudent
@@ -653,6 +672,36 @@ components:
           type: integer
         createdAt:
           type: string
+
+    BulkStudentInput:
+      type: object
+      required: [students]
+      properties:
+        students:
+          type: array
+          items:
+            $ref: "#/components/schemas/StudentInput"
+        classId:
+          type: ["integer", "null"]
+        skipDuplicates:
+          type: boolean
+
+    BulkStudentResult:
+      type: object
+      required: [imported, skipped, errors, total]
+      properties:
+        imported:
+          type: integer
+        skipped:
+          type: integer
+        errors:
+          type: integer
+        total:
+          type: integer
+        errorDetails:
+          type: array
+          items:
+            type: string
 
     DraftInput:
       type: object
