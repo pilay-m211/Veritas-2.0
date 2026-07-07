@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,13 +6,15 @@ import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/contexts/auth-context";
 import { AppLayout } from "@/components/layout";
 
-// Pages — public
+// Public pages
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 
-// Pages — protected
+// Protected pages
 import Dashboard from "@/pages/dashboard";
+import AdminDashboard from "@/pages/admin-dashboard";
+import AuditorDashboard from "@/pages/auditor-dashboard";
 import Classes from "@/pages/classes";
 import Exams from "@/pages/exams";
 import Students from "@/pages/students";
@@ -25,66 +27,84 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
 });
 
-// ── Guard: redirect to /login if not authenticated ──
-function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading } = useAuth();
-  if (loading) return (
+// ── Full-screen loader shown while Firebase resolves auth state ──────────────
+function SplashLoader() {
+  return (
     <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#060914" }}>
-      <div className="text-center space-y-3">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl mx-auto"
+      <div className="text-center space-y-4">
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl mx-auto animate-pulse"
           style={{ background: "linear-gradient(135deg,#2dd4bf,#22d3ee,#818cf8)", color: "#060914" }}>V</div>
-        <div className="text-sm font-medium animate-pulse" style={{ color: "#2dd4bf" }}>Loading Veritas…</div>
+        <p className="text-sm font-medium font-mono tracking-wider" style={{ color: "#2dd4bf" }}>VERITAS · LOADING</p>
       </div>
     </div>
   );
-  if (!currentUser) return <Redirect to="/login" />;
+}
+
+// ── Role-based dashboard dispatcher ─────────────────────────────────────────
+function DashboardDispatcher() {
+  const { userProfile, loading } = useAuth();
+  if (loading) return <SplashLoader />;
+  switch (userProfile?.role) {
+    case "admin":   return <AdminDashboard />;
+    case "auditor": return <AuditorDashboard />;
+    default:        return <Dashboard />;
+  }
+}
+
+// ── Auth guards ──────────────────────────────────────────────────────────────
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { currentUser, loading } = useAuth();
+  if (loading) return <SplashLoader />;
+  if (!currentUser) return <Redirect to="/" />;
   return <>{children}</>;
 }
 
-// ── Guard: redirect already-authenticated users away from auth pages ──
 function RedirectIfAuth({ children }: { children: React.ReactNode }) {
   const { currentUser, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <SplashLoader />;
   if (currentUser) return <Redirect to="/dashboard" />;
   return <>{children}</>;
+}
+
+// ── Role guard for admin-only / auditor-only pages ───────────────────────────
+function RequireRole({ role, children }: { role: string; children: React.ReactNode }) {
+  const { userProfile, loading } = useAuth();
+  if (loading) return <SplashLoader />;
+  if (userProfile?.role !== role) return <Redirect to="/dashboard" />;
+  return <>{children}</>;
+}
+
+// ── Convenience wrapper ───────────────────────────────────────────────────────
+function Protected({ children }: { children: React.ReactNode }) {
+  return <RequireAuth><AppLayout>{children}</AppLayout></RequireAuth>;
 }
 
 function Router() {
   return (
     <Switch>
       {/* Public */}
-      <Route path="/" component={() => (
-        <RedirectIfAuth><Landing /></RedirectIfAuth>
+      <Route path="/"         component={() => <RedirectIfAuth><Landing /></RedirectIfAuth>} />
+      <Route path="/login"    component={() => <RedirectIfAuth><Login /></RedirectIfAuth>} />
+      <Route path="/register" component={() => <RedirectIfAuth><Register /></RedirectIfAuth>} />
+
+      {/* Protected — role-dispatched dashboard */}
+      <Route path="/dashboard" component={() => <Protected><DashboardDispatcher /></Protected>} />
+
+      {/* Role-specific portals (also accessible directly by URL) */}
+      <Route path="/admin" component={() => (
+        <Protected><RequireRole role="admin"><AdminDashboard /></RequireRole></Protected>
       )} />
-      <Route path="/login" component={() => (
-        <RedirectIfAuth><Login /></RedirectIfAuth>
-      )} />
-      <Route path="/register" component={() => (
-        <RedirectIfAuth><Register /></RedirectIfAuth>
+      <Route path="/audit" component={() => (
+        <Protected><RequireRole role="auditor"><AuditorDashboard /></RequireRole></Protected>
       )} />
 
-      {/* Protected — wrapped in RequireAuth + AppLayout */}
-      <Route path="/dashboard" component={() => (
-        <RequireAuth><AppLayout><Dashboard /></AppLayout></RequireAuth>
-      )} />
-      <Route path="/classes" component={() => (
-        <RequireAuth><AppLayout><Classes /></AppLayout></RequireAuth>
-      )} />
-      <Route path="/exams" component={() => (
-        <RequireAuth><AppLayout><Exams /></AppLayout></RequireAuth>
-      )} />
-      <Route path="/students" component={() => (
-        <RequireAuth><AppLayout><Students /></AppLayout></RequireAuth>
-      )} />
-      <Route path="/scanner" component={() => (
-        <RequireAuth><AppLayout><Scanner /></AppLayout></RequireAuth>
-      )} />
-      <Route path="/reports" component={() => (
-        <RequireAuth><AppLayout><Reports /></AppLayout></RequireAuth>
-      )} />
-      <Route path="/settings" component={() => (
-        <RequireAuth><AppLayout><Settings /></AppLayout></RequireAuth>
-      )} />
+      {/* Standard educator pages */}
+      <Route path="/classes"  component={() => <Protected><Classes /></Protected>} />
+      <Route path="/exams"    component={() => <Protected><Exams /></Protected>} />
+      <Route path="/students" component={() => <Protected><Students /></Protected>} />
+      <Route path="/scanner"  component={() => <Protected><Scanner /></Protected>} />
+      <Route path="/reports"  component={() => <Protected><Reports /></Protected>} />
+      <Route path="/settings" component={() => <Protected><Settings /></Protected>} />
 
       <Route component={NotFound} />
     </Switch>

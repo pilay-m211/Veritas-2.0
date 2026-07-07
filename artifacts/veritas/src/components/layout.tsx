@@ -3,36 +3,64 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Users, BookOpen, ScanLine, BarChart2,
   Settings, LogOut, GraduationCap, Shield, User,
+  Activity, Terminal, Building2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
-const ROLE_BADGE: Record<string, { label: string; color: string }> = {
-  educator: { label: "Educator", color: "#2dd4bf" },
-  admin:    { label: "Admin",    color: "#818cf8" },
-  auditor:  { label: "Auditor",  color: "#f59e0b" },
+const ROLE_BADGE: Record<string, { label: string; color: string; bg: string }> = {
+  educator: { label: "Educator", color: "#2dd4bf", bg: "rgba(45,212,191,0.12)" },
+  admin:    { label: "Admin",    color: "#818cf8", bg: "rgba(129,140,248,0.12)" },
+  auditor:  { label: "Auditor",  color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
 };
 
+type NavItem = { href: string; icon: React.ElementType; label: string };
+
+const EDUCATOR_NAV: NavItem[] = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/classes",   icon: BookOpen,        label: "Classes" },
+  { href: "/exams",     icon: GraduationCap,   label: "Exams" },
+  { href: "/students",  icon: Users,           label: "Students" },
+  { href: "/scanner",   icon: ScanLine,        label: "Scanner" },
+  { href: "/reports",   icon: BarChart2,       label: "Reports" },
+  { href: "/settings",  icon: Settings,        label: "Settings" },
+];
+
+const ADMIN_NAV: NavItem[] = [
+  { href: "/dashboard", icon: Building2,       label: "Command Center" },
+  { href: "/classes",   icon: BookOpen,        label: "Classes" },
+  { href: "/students",  icon: Users,           label: "Students" },
+  { href: "/reports",   icon: Activity,        label: "Analytics" },
+  { href: "/settings",  icon: Settings,        label: "Settings" },
+];
+
+const AUDITOR_NAV: NavItem[] = [
+  { href: "/dashboard", icon: Shield,          label: "Audit Hub" },
+  { href: "/reports",   icon: BarChart2,       label: "Reports" },
+  { href: "/settings",  icon: Terminal,        label: "System" },
+];
+
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { userProfile, logout } = useAuth();
 
   const role = userProfile?.role ?? "educator";
-  const badge = ROLE_BADGE[role];
+  const badge = ROLE_BADGE[role] ?? ROLE_BADGE.educator;
 
-  const navItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/classes",   icon: BookOpen,        label: "Classes" },
-    { href: "/exams",     icon: GraduationCap,   label: "Exams" },
-    { href: "/students",  icon: Users,           label: "Students" },
-    { href: "/scanner",   icon: ScanLine,        label: "Scanner" },
-    { href: "/reports",   icon: BarChart2,       label: "Reports" },
-    { href: "/settings",  icon: Settings,        label: "Settings" },
-  ];
+  const navItems =
+    role === "admin" ? ADMIN_NAV :
+    role === "auditor" ? AUDITOR_NAV :
+    EDUCATOR_NAV;
+
+  async function handleLogout() {
+    await logout();
+    navigate("/");
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground dark">
       {/* Sidebar */}
       <aside className="w-64 border-r border-border bg-card/50 backdrop-blur-sm flex flex-col z-10">
+
         {/* Logo */}
         <div className="p-6 flex items-center gap-3 border-b border-border/50">
           <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-[0_0_15px_rgba(0,240,255,0.4)]">
@@ -44,10 +72,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
+        {/* Role badge strip */}
+        <div className="px-4 py-2.5 border-b border-border/30">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+            style={{ background: badge.bg, border: `1px solid ${badge.color}25` }}>
+            {role === "auditor" ? <Shield className="h-3 w-3" style={{ color: badge.color }} />
+              : role === "admin" ? <Building2 className="h-3 w-3" style={{ color: badge.color }} />
+              : <User className="h-3 w-3" style={{ color: badge.color }} />}
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: badge.color }}>
+              {badge.label} Portal
+            </span>
+          </div>
+        </div>
+
         {/* Nav */}
-        <div className="flex-1 overflow-y-auto py-6 px-3">
-          <div className="space-y-1">
-            <div className="px-3 pb-2 text-xs font-mono text-muted-foreground uppercase tracking-wider">
+        <div className="flex-1 overflow-y-auto py-4 px-3">
+          <div className="space-y-0.5">
+            <div className="px-3 pb-2 pt-1 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
               Navigation
             </div>
             {navItems.map((item) => {
@@ -61,7 +102,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       ? "bg-primary/10 text-primary border border-primary/20 shadow-[inset_4px_0_0_rgba(0,240,255,1)]"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                   )}>
-                    <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
+                    <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
                     {item.label}
                   </div>
                 </Link>
@@ -70,29 +111,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* User profile + logout */}
+        {/* User + logout */}
         <div className="p-4 border-t border-border/50 space-y-2">
-          {/* User info */}
           <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-secondary/30">
-            <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: `${badge.color}20`, border: `1px solid ${badge.color}40` }}>
-              {role === "auditor" ? <Shield className="h-3.5 w-3.5" style={{ color: badge.color }} />
-                : <User className="h-3.5 w-3.5" style={{ color: badge.color }} />}
+            <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm"
+              style={{ background: badge.bg, border: `1px solid ${badge.color}40`, color: badge.color }}>
+              {(userProfile?.name ?? "?").charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground truncate">
-                {userProfile?.name ?? "Teacher"}
-              </p>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-                style={{ background: `${badge.color}18`, color: badge.color }}>
-                {badge.label}
-              </span>
+              <p className="text-xs font-semibold text-foreground truncate">{userProfile?.name ?? "Teacher"}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{userProfile?.email ?? ""}</p>
             </div>
           </div>
-
-          {/* Logout */}
           <button
-            onClick={() => logout()}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer rounded-md hover:bg-secondary"
           >
             <LogOut className="h-4 w-4" />

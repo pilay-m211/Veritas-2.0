@@ -1,0 +1,3 @@
+- [Firebase auth setup](firebase-auth.md) — Firebase web SDK config hardcoded in lib/firebase.ts; Firestore writes are try/catch'd because Security Rules may block them.
+- [RBAC routing](rbac-routing.md) — Three roles: educator/admin/auditor. DashboardDispatcher in App.tsx renders the right dashboard by role. RequireRole guard blocks wrong-role URLs.
+- [Scanner clipboard paste](scanner-notes.md) — Ctrl+V paste handler on window "paste" event, reads ClipboardData items for image/* type, stable in empty-dep useEffect.
