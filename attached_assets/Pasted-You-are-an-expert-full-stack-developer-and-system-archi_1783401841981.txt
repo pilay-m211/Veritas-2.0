@@ -1,0 +1,36 @@
+You are an expert full-stack developer and system architect. Build a mobile/web scanner application with the following strict requirements. 
+
+Do not begin generating code or scaffolding the project until you have fully analyzed these requirements and asked any necessary clarifying questions regarding the edge cases.
+
+---
+
+### 1. AUTHENTICATION & ONBOARDING FLOW
+Implement a robust authentication system. If using Firebase, ensure all configurations, environment variables, and initializations are fully functional.
+
+* **Sign-Up Options:** Users must be able to sign up using either:
+    1. Continue with Google (OAuth)
+    2. Email and Password
+* **Verification Security:** For both signup methods, the user cannot immediately access the app. A 6-digit verification code must be sent to their email first. The user must input this code successfully before being redirected to the dashboard.
+* **Bug Fix:** Resolve the current issue where users cannot sign in or create an account. Ensure proper error handling, state management, and that the auth token/session persists correctly.
+
+---
+
+### 2. DISCOVERY & PERMISSIONS (EXCEL INTEGRATION)
+When a user opens the scanner feature, the app must explicitly request permission to access their external cloud storage (e.g., OneDrive / Google Drive) or local Excel files. 
+
+Once permission is granted, the app must present a clear UI selection screen *before* processing the scan:
+* **Option A:** A list of existing Excel files fetched from their account. The user selects which specific file and sheet they want to integrate the scanned document data into.
+* **Option B:** A "Create New File" button. If selected, the app prompts the user to name a new Excel file, creates it, and targets it for the scanned data.
+
+---
+
+### 3. CREDIT SYSTEM (PIVOTAL ARCHITECTURE)
+* Every scan and data extraction costs 1 "Credit".
+* The system must check the user's credit balance in the database *before* initiating any scan or Excel write operation.
+* If credits = 0, block the action and prompt the user to top up.
+* Deduct the credit successfully only after a confirmed successful scan and data integration.
+
+---
+
+### 4. ACKNOWLEDGEMENT REQUIREMENT
+Before writing any code, reply to the user confirming you understand these architectural requirements. List any clarifying questions you have regarding the tech stack (e.g., Firebase vs Supabase, frontend framework) or specific API integrations for the Excel files.
