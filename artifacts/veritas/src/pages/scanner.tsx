@@ -20,6 +20,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { logActivity } from "@/lib/activity-logger";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -92,6 +94,7 @@ export default function Scanner() {
   const deleteDraft = useDeleteDraft();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { currentUser } = useAuth();
 
   // Image & OCR
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -193,6 +196,9 @@ export default function Scanner() {
       setProgress(100); setProgressMsg("Complete");
       setRightTab(parsed.length > 0 ? "records" : "text");
       toast({ title: parsed.length > 0 ? `Found ${parsed.length} record(s)` : "Extraction complete — check raw text" });
+      if (currentUser && parsed.length > 0) {
+        logActivity(currentUser.uid, "ocr_scan", `Extracted ${parsed.length} record(s) from scanned image`, { recordCount: parsed.length });
+      }
     } catch {
       toast({ title: "OCR failed — try a clearer, well-lit image", variant: "destructive" });
     } finally {
@@ -238,6 +244,7 @@ export default function Scanner() {
     window.XLSX.utils.book_append_sheet(wb, ws, "Veritas Grades");
     window.XLSX.writeFile(wb, `veritas-grades-${Date.now()}.xlsx`);
     toast({ title: `Downloaded ${records.length} records as Excel` });
+    if (currentUser) logActivity(currentUser.uid, "excel_export_new", `Exported ${records.length} record(s) to new Excel file`, { recordCount: records.length });
   }
 
   async function handleUpdateExcel(file: File) {
@@ -255,6 +262,7 @@ export default function Scanner() {
     wb.Sheets[wsName] = window.XLSX.utils.aoa_to_sheet(existing);
     window.XLSX.writeFile(wb, `veritas-updated-${Date.now()}.xlsx`);
     toast({ title: `Merged ${records.length} records into existing Excel` });
+    if (currentUser) logActivity(currentUser.uid, "excel_export_merge", `Merged ${records.length} record(s) into existing Excel file`, { recordCount: records.length });
     setUpdateXlsxOpen(false);
   }
 
@@ -265,7 +273,10 @@ export default function Scanner() {
     bulkUpsert.mutate({
       data: { examId: Number(examId), records: records.map(r => ({ studentSchoolId: r.sid, score: r.score })) }
     }, {
-      onSuccess: res => toast({ title: `Synced ${res.updated} grade(s)` + (res.notFound ? ` · ${res.notFound} ID(s) not found` : "") }),
+      onSuccess: res => {
+        toast({ title: `Synced ${res.updated} grade(s)` + (res.notFound ? ` · ${res.notFound} ID(s) not found` : "") });
+        if (currentUser) logActivity(currentUser.uid, "grade_sync", `Synced ${res.updated} grade(s) to exam #${examId}` + (res.notFound ? ` (${res.notFound} not found)` : ""), { examId, synced: res.updated, notFound: res.notFound });
+      },
       onError: () => toast({ title: "Sync failed", variant: "destructive" }),
     });
   }
@@ -279,6 +290,7 @@ export default function Scanner() {
       onSuccess: () => {
         toast({ title: "Draft saved" });
         queryClient.invalidateQueries({ queryKey: getListDraftsQueryKey() });
+        if (currentUser) logActivity(currentUser.uid, "draft_save", `Saved draft "${draftName || `Draft ${new Date().toLocaleDateString()}`}" with ${records.length} record(s)`, { draftName, recordCount: records.length });
         setDraftOpen(false); setDraftName("");
       },
       onError: () => toast({ title: "Error saving draft", variant: "destructive" }),

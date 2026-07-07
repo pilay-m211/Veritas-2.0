@@ -1,10 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import {
   onAuthStateChanged, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, signOut, type User,
+  createUserWithEmailAndPassword, signOut,
+  sendPasswordResetEmail, type User,
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { logAuthEvent } from "@/lib/activity-logger";
 
 export type UserRole = "educator" | "admin" | "auditor";
 
@@ -24,6 +26,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role: UserRole, school?: string, gradeLevel?: string) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -41,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const snap = await getDoc(doc(db, "users", user.uid));
           if (snap.exists()) setUserProfile(snap.data() as UserProfile);
         } catch {
-          // Firestore unavailable — fallback profile so app doesn't break
           setUserProfile({ uid: user.uid, name: user.displayName ?? "Teacher", email: user.email ?? "", role: "educator" });
         }
       } else {
@@ -53,7 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    await signInWithEmailAndPassword(auth, email, password);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    // Fire-and-forget — never block login on Firestore write
+    logAuthEvent(cred.user.uid, "login");
   }
 
   async function register(email: string, password: string, name: string, role: UserRole, school = "", gradeLevel = "") {
@@ -64,16 +68,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Firestore write failed — profile stored locally only
     }
+    // Log registration as first login event
+    logAuthEvent(cred.user.uid, "login");
     setUserProfile(profile);
   }
 
   async function logout() {
+    const uid = currentUser?.uid;
+    if (uid) await logAuthEvent(uid, "logout");
     await signOut(auth);
     setUserProfile(null);
   }
 
+  async function resetPassword(email: string) {
+    await sendPasswordResetEmail(auth, email);
+  }
+
   return (
-    <AuthContext.Provider value={{ currentUser, userProfile, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ currentUser, userProfile, loading, login, register, logout, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
